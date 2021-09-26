@@ -16,6 +16,47 @@ def inputHp2nwt(inputHp):
     global cwd
     global namefile
     global initnwt
+    global IMSNUM
+    with open(os.path.join(cwd, 'imsfiles', 'imsnum.txt'), 'r+') as f:
+        IMSNUM = int(f.read())
+        f.seek(0)
+        f.truncate()
+        f.write(str(IMSNUM+1))
+    with open(os.path.join(cwd, 'imsfiles', ('ims_{}.ims'.format(IMSNUM))), 'w') as file:
+        # write options block
+        file.write('BEGIN OPTIONS\n')
+        file.write(f'PRINT_OPTION ALL\nNO_PTC {inputHp[0]}\nATS_OUT_MAXIMUM_FRACTION {inputHp[1]}\n')
+        file.write('END OPTIONS\n')
+
+        # write NONLINEAR BLOCK
+        file.write('BEGIN NONLINEAR\n')
+        file.write(f'OUTER_DVCLOSE {inputHp[2]}\nOUTER_MAXIMUM {inputHp[3]}\n')
+        # write out all the options under under_relaxation
+        [file.write(f'{k.upper()} {val}\n') for k,val in inputHp[4].items()]
+        # write out all the options under backtracking_number
+        [file.write(f'{k.upper()} {val}\n') for k,val in inputHp[5].items()]
+        file.write('END NONLINEAR\n')
+
+        # write LINEAR block
+        file.write('BEGIN LINEAR\n')
+        file.write(f'INNER_MAXIMUM {inputHp[6]}\nINNER_DVCLOSE {inputHp[7]}\n')
+        file.write(f'INNER_RCLOSE{inputHp[8]}\nLINEAR_ACCELERATION {inputHp[9]}\n')
+        # write out all the options under relaxation_factor
+        [file.write(f'{k.upper()} {val}\n') for k,val in inputHp[10].items()]        
+        # write out all the options under preconditioner_drop_tolerance
+        [file.write(f'{k.upper()} {val}\n') for k,val in inputHp[11].items()]        
+        # write out all the options under number_orthogonalizations
+        [file.write(f'{k.upper()} {val}\n') for k,val in inputHp[12].items()]        
+        file.write(f'SCALING_METHOD{inputHp[13]}\REORDERING_METHOD {inputHp[14]}\n')
+        file.write('END LINEAR\n')
+        
+    # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
+    return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(IMSNUM)))
+
+def inputHp2mf6(inputHp):
+    global cwd
+    global namefile
+    global initnwt
     global NWTNUM
     with open(os.path.join(cwd, 'nwts', 'nwtnum.txt'), 'r+') as f:
         NWTNUM = int(f.read())
@@ -38,6 +79,7 @@ def inputHp2nwt(inputHp):
                       int(inputHp[0]['mxiterxmd']))))
     # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
     return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM)))
+
 
 def trials2csv(trials):
     global cwd

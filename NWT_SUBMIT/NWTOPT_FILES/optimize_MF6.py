@@ -23,10 +23,16 @@ except:
     os.mkdir(os.path.join(os.path.join(cwd[0:-12], 'PROJECT_FILES'), 'nwts'))
 
 hparams = [
+    #OPTIONS PARAMETERS
+    hp.choice('no_ptc',
+        [
+            'first','all'
+        ]), #0
+    hp.uniform('ats_outer_maximum_fraction', 0.0, 0.5), #1
     #NONLINEAR PARAMETERS 
-    hp.uniform('outer_dvclose', .001, 5.),
-    hp.quniform('outer_maximum', 1, 500, 1),
-    hp.choice('under_relaxation',
+    hp.uniform('outer_dvclose', .001, 5.), #2
+    hp.quniform('outer_maximum', 1, 500, 1), #3
+    hp.choice('under_relaxation', #4
         [
             {'under_relaxation':'none'},
             {'under_relaxation': 'simple',
@@ -45,7 +51,7 @@ hparams = [
 
             }
         ]),
-    hp.choice('backtracking_number',
+    hp.choice('backtracking_number', #5
         [
             {'backtracking_number': 0},
             {'backtracking_number': hp.quniform(1,20,1),
@@ -55,37 +61,37 @@ hparams = [
             }
         ]),
     #LINEAR PARAMETERS 
-    hp.quniform('inner_maximum', 40, 650, 1),
-    hp.uniform('inner_dvclose', 1.0e-7, 1.0),
-    hp.uniform('inner_rclose', 1.0e-1, 1.0e7),
+    hp.quniform('inner_maximum', 40, 650, 1),#6
+    hp.uniform('inner_dvclose', 1.0e-7, 1.0),#7
+    hp.uniform('inner_rclose', 1.0e-1, 1.0e7),#8
     # NOTE: skipping rclose_option because very units dependent
-    hp.choice('linear acceleration', [
+    hp.choice('linear acceleration', [ #9
         'CG', 'BICGSTAB'
     ]),
-    hp.choice('relaxation_factor',
+    hp.choice('relaxation_factor', #10
         [
             {'relaxation_factor':0.0},
             {'relaxation_factor':hp.uniform('relaxation_factor',0.9,1.0)}
         ]),
     
-    hp.choice('preconditioner_drop_tolerance',
+    hp.choice('preconditioner_drop_tolerance', #11
         [
             {'preconditioner_drop_tolerance':0.0},
             {'preconditioner_drop_tolerance':hp.uniform('preconditioner_drop_tolerance',1e-5, 1e-3),
             'preconditioner_levels':hp.quniform('preconditioner_levels',6,9,1),
             }
         ]),
-    hp.choice('number_orthogonalizations',
+    hp.choice('number_orthogonalizations', #12
         [
             {'number_orthogonalizations':0},
             {'number_orthogonalizations':hp.quniform('number_orthogonalizations',14,10,1)
             }
         ]),
-    hp.choice('scaling_method',
+    hp.choice('scaling_method', #13
         [
             'none','diagonal','polcg','l2norm'
         ]),
-    hp.choice('reordering_method',
+    hp.choice('reordering_method', #14
         [
             'none','rcm','md'
         ])
