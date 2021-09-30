@@ -1,6 +1,7 @@
 import os
 import time
 import fileinput
+from datetime import datetime
 from subprocess import call, Popen, run, STDOUT, check_output, TimeoutExpired
 import subprocess
 from threading import Timer
@@ -8,6 +9,9 @@ from shutil import copyfile, rmtree
 import pandas as pd
 from hyperopt import STATUS_OK
 import math
+
+global timelim
+timelim = None
 
 
 global timelim
@@ -217,6 +221,7 @@ def objective(inputHp):
     global initnwt
     global initims # needed for mf6
     global timelim
+    eval_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cwd = os.path.join(os.sep + os.path.join(*os.getcwd().split(os.sep)[0:-1]), os.path.join('NWT_SUBMIT','PROJECT_FILES'))
     for file in os.listdir(cwd):
         if file.endswith('.nam') & file != 'mfsim.nam':
@@ -244,22 +249,24 @@ def objective(inputHp):
     if not runModel(pathtonwt, initnwt):
         return {'loss': 999999999999,
                 'status':  STATUS_OK,
-                'eval_time': time.time(),
+                'eval_time': eval_time,
                 'mass_balance': 999999,
                 'sec_elapsed': timelim,
                 'iterations': -1,
-                'NWT Used': pathtonwt}
+                'NWT Used': pathtonwt,
+                'finish_time': finish_time}
 
     sec_elapsed, iterations, mass_balance = getdata()
     if mass_balance == 999999:
         loss = 999999999999
     else:
         loss = math.exp(mass_balance ** 2) * sec_elapsed
-
+    finish_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return {'loss': loss,
             'status':  STATUS_OK,
-            'eval_time': time.time(),
+            'eval_time': eval_time,
             'mass_balance': mass_balance,
             'sec_elapsed': sec_elapsed,
             'iterations': iterations,
-            'NWT Used': pathtonwt}
+            'NWT Used': pathtonwt,
+            'finish_time': finish_time}
