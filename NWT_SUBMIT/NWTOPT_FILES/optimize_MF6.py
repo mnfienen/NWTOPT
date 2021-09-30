@@ -9,6 +9,7 @@ import pandas as pd
 from hyperopt import fmin, rand, atpe, tpe, hp, STATUS_OK, Trials
 from hyperopt.mongoexp import MongoTrials
 import objective
+from functools import partial
 
 cwd = os.getcwd()
 # print(cwd[0:-12])
@@ -108,6 +109,9 @@ if __name__ == '__main__':
     parser.add_argument('--key', type=str, help='key of job you want to pull')
     parser.add_argument('--random', type=bool, required=False, default=False)
     parser.add_argument('--trials', type=int, help='num trials you would like to run')
+    parser.add_argument('--mf6', type=bool, required=False, default=False,
+                 help='flag for MODFLOW6 if True, else MODFLOW-NWT.')
+    
     args = parser.parse_args()
     trials = MongoTrials('mongo://'+ args.ip + ':'+ args.port + '/db/jobs', exp_key=args.key)
     try:

@@ -1,7 +1,6 @@
 import os
 import time
 import fileinput
-from datetime import datetime
 from subprocess import call, Popen, run, STDOUT, check_output, TimeoutExpired
 import subprocess
 from threading import Timer
@@ -10,10 +9,11 @@ import pandas as pd
 from hyperopt import STATUS_OK
 import math
 
+
 global timelim
 timelim = None
 
-def inputHp2nwt(inputHp):
+def inputHp2mf6(inputHp):
     global cwd
     global namefile
     global initnwt
@@ -54,7 +54,7 @@ def inputHp2nwt(inputHp):
     # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
     return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(IMSNUM)))
 
-def inputHp2mf6(inputHp):
+def inputHp2nwt(inputHp):
     global cwd
     global namefile
     global initnwt
@@ -125,7 +125,8 @@ def runModel(pathtonwt, initnwt):
         print('[WARNING] Time Limit reached, terminating run')
         return False
 
-def getdata():
+def getdata(mf6=False):
+    # mf6 (bool) True indicates read MF6 output, False indicates read NWT output
     global cwd
     global namefile
     global listfile
@@ -136,14 +137,23 @@ def getdata():
         for line in reversed(list(file)):
             if 'Error in Preconditioning' in line:
                 return 999999, -1, 999999
-            if 'PERCENT DISCREPANCY' in line and mbfound == False:
+            if 'PERCENT DISCREPANCY' in line.upper() and mbfound == False:
                 mbfound = True
                 mbline = line
-            if 'Elapsed run time' in line:
-                timeline = line
-            if 'OUTER ITERATIONS' in line:
+            if mf6 is False:
+                # only get runtime from LST file if NWT - for MF6, need to read mfsim.list
+                if 'elapsed run time' in line.lower():
+                    timeline = line
+            if 'OUTER ITERATIONS' in line.upper():
                 iterline = line
                 break
+    if mf6 is True:
+        # special case to read elapsed time from mfsim.lst if MF6 model (that filename cannot change)
+        mf6lst = reversed(open('mfsim.lst', 'r').readlines())
+        try:
+            timeline = [i for i in mf6lst if 'elapsed run time' in i.lower()][0]
+        except:
+            pass
     if timeline == '':
         return 999999, -1, 999999
 
@@ -205,16 +215,19 @@ def objective(inputHp):
     global namefile
     global listfile
     global initnwt
+    global initims # needed for mf6
     global timelim
-    eval_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cwd = os.path.join(os.sep + os.path.join(*os.getcwd().split(os.sep)[0:-1]), os.path.join('NWT_SUBMIT','PROJECT_FILES'))
     for file in os.listdir(cwd):
-        if file.endswith('.nam'):
+        if file.endswith('.nam') & file != 'mfsim.nam':
             namefile = file
-        elif file.endswith('.list') or file.endswith('.lst'):
+        elif file.endswith('.list') or file.endswith('.lst') and 'mfsim' not in file:
             listfile = file
         elif file.endswith('.nwt'):
             initnwt = file
+        elif file.endswith('.ims'):
+            initims = file
+        
     foundList, foundNWT = False, False
     with open(os.path.join(cwd, namefile), 'r') as f:
         while(not(foundList and foundNWT)):
@@ -229,27 +242,24 @@ def objective(inputHp):
 
     pathtonwt = inputHp2nwt(inputHp)
     if not runModel(pathtonwt, initnwt):
-        finish_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return {'loss': 999999999999,
                 'status':  STATUS_OK,
-                'eval_time': eval_time,
+                'eval_time': time.time(),
                 'mass_balance': 999999,
                 'sec_elapsed': timelim,
                 'iterations': -1,
-                'NWT Used': pathtonwt,
-                'finish_time': finish_time}
+                'NWT Used': pathtonwt}
 
     sec_elapsed, iterations, mass_balance = getdata()
     if mass_balance == 999999:
         loss = 999999999999
     else:
         loss = math.exp(mass_balance ** 2) * sec_elapsed
-    finish_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     return {'loss': loss,
             'status':  STATUS_OK,
-            'eval_time': eval_time,
+            'eval_time': time.time(),
             'mass_balance': mass_balance,
             'sec_elapsed': sec_elapsed,
             'iterations': iterations,
-            'NWT Used': pathtonwt,
-            'finish_time': finish_time}
+            'NWT Used': pathtonwt}
