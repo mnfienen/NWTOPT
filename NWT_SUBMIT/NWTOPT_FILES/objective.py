@@ -20,7 +20,7 @@ timelim = None
 def inputHp2mf6(inputHp):
     global cwd
     global namefile
-    global initnwt
+    global initims
     global IMSNUM
     with open(os.path.join(cwd, 'imsfiles', 'imsnum.txt'), 'r+') as f:
         IMSNUM = int(f.read())

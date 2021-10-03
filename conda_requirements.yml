@@ -15,6 +15,9 @@ dependencies:
 - decorator=5.0.9
 - future=0.18.2
 - hyperopt=0.2.5
+- jupyter
+- notebook
+- matplotlib
 - ld_impl_linux-64=2.35.1
 - libblas=3.9.0
 - libcblas=3.9.0

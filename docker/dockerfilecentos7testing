@@ -21,3 +21,10 @@ RUN curl -L -o linux.zip https://github.com/MODFLOW-USGS/executables/releases/la
 
 # add binaries to the path
 ENV PATH="./binaries:${PATH}"
+
+
+RUN useradd -u 8877 testuser 
+
+USER testuser
+
+RUN conda init bash && source /home/testuser/.bashrc
