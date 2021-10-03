@@ -110,29 +110,28 @@ if __name__ == '__main__':
     parser.add_argument('--random', type=bool, required=False, default=False)
     parser.add_argument('--trials', type=int, help='num trials you would like to run')
     parser.add_argument('--mf6', type=bool, required=False, default=False,
-                 help='flag for MODFLOW6 if True, else MODFLOW-NWT.')
+                        help='flag for MODFLOW6 if True, else MODFLOW-NWT.')
     
     args = parser.parse_args()
     trials = MongoTrials('mongo://'+ args.ip + ':'+ args.port + '/db/jobs', exp_key=args.key)
     try:
-        os.remove(os.path.join(os.getcwd(), 'nwts/nwtnum.txt'))
+        os.remove(os.path.join(os.getcwd(), 'nwts/imsnum.txt'))
     except:
         pass
-    with open(os.path.join(os.getcwd(), 'nwts/nwtnum.txt'), 'w+') as f:
+    with open(os.path.join(os.getcwd(), 'nwts/imsnum.txt'), 'w+') as f:
         f.write('0')
     if args.random == False:
         print('TPE Run')
         bestHp = fmin(fn=objective.objective,
                       space=hparams,
+                      max_queue_len=3,
                       algo=tpe.suggest,
                       max_evals=args.trials,
                       trials=trials)
     else:
         bestRandHp = fmin(fn=objective.objective,
                       space=hparams,
+                      max_queue_len=3,
                       algo=rand.suggest,
                       max_evals=args.trials,
                       trials=trials)
-
-            }
-        ]),
