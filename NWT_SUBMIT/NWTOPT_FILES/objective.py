@@ -56,7 +56,7 @@ def inputHp2mf6(inputHp):
         file.write('END LINEAR\n')
         
     # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
-    return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(IMSNUM)))
+    return os.path.join(cwd, 'nwts', ('nwt_{}.ims'.format(IMSNUM)))
 
 def inputHp2nwt(inputHp):
     global cwd
