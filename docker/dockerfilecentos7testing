@@ -1,0 +1,23 @@
+FROM conda/miniconda3-centos7
+
+USER root
+
+RUN yum -y update && \
+    yum install -y curl && \
+    yum install -y unzip && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+COPY conda_requirements.yml /opt/conda_requirements.yml
+
+RUN conda update conda -y && conda env create -f /opt/conda_requirements.yml && conda clean --all -f -y 
+RUN conda init bash && source /root/.bashrc
+
+# get the MODFLOW binaries
+RUN curl -L -o linux.zip https://github.com/MODFLOW-USGS/executables/releases/latest/download/linux.zip?raw=true \
+&& mkdir binaries \
+&& unzip linux.zip -d binaries \
+&& rm linux.zip 
+
+# add binaries to the path
+ENV PATH="./binaries:${PATH}"

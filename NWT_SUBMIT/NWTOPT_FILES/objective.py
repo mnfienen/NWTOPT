@@ -89,7 +89,6 @@ def inputHp2nwt(inputHp):
 def trials2csv(trials):
     global cwd
     global namefile
-    global initnwt
     df = pd.DataFrame(trials.results).drop('loss', axis=1)
     df.to_csv(os.path.join(cwd, 'nwt_performance.csv'))
 
