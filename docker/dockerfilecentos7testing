@@ -1,5 +1,5 @@
-FROM conda/miniconda3-centos7
-
+FROM conda/miniconda3-centos7 AS base
+ 
 USER root
 
 RUN yum -y update && \
@@ -27,5 +27,19 @@ ENV PATH="./binaries:${PATH}"
 RUN useradd -u 8877 testuser 
 
 USER testuser
+#############################
+# make a debugger version
+#############################
 
+
+FROM base AS debugger
+USER testuser
 RUN conda init bash && source /home/testuser/.bashrc
+RUN conda activate nwtenv && conda install debugpy -y && conda clean --all -f -y
+
+ENTRYPOINT ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m,"
+
+#############################
+# make a production version
+#############################
+ENTRYPOINT [ "/bin/bash " ]
