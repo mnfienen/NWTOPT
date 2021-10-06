@@ -20,14 +20,14 @@ timelim = None
 def inputHp2mf6(inputHp):
     global cwd
     global namefile
-    global initims
-    global IMSNUM
-    with open(os.path.join(cwd, 'imsfiles', 'imsnum.txt'), 'r+') as f:
-        IMSNUM = int(f.read())
+    global initsol
+    global SOLNUM
+    with open(os.path.join(cwd, 'imsfiles', 'solnum.txt'), 'r+') as f:
+        SOLNUM = int(f.read())
         f.seek(0)
         f.truncate()
-        f.write(str(IMSNUM+1))
-    with open(os.path.join(cwd, 'imsfiles', ('ims_{}.ims'.format(IMSNUM))), 'w') as file:
+        f.write(str(SOLNUM+1))
+    with open(os.path.join(cwd, 'imsfiles', ('ims_{}.ims'.format(SOLNUM))), 'w') as file:
         # write options block
         file.write('BEGIN OPTIONS\n')
         file.write(f'PRINT_OPTION ALL\nNO_PTC {inputHp[0]}\nATS_OUT_MAXIMUM_FRACTION {inputHp[1]}\n')
@@ -55,35 +55,35 @@ def inputHp2mf6(inputHp):
         file.write(f'SCALING_METHOD{inputHp[13]}\REORDERING_METHOD {inputHp[14]}\n')
         file.write('END LINEAR\n')
         
-    # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
-    return os.path.join(cwd, 'nwts', ('nwt_{}.ims'.format(IMSNUM)))
+    # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM))))
+    return os.path.join(cwd, 'nwts', ('nwt_{}.ims'.format(SOLNUM)))
 
 def inputHp2nwt(inputHp):
     global cwd
     global namefile
-    global initnwt
-    global NWTNUM
-    with open(os.path.join(cwd, 'nwts', 'nwtnum.txt'), 'r+') as f:
-        NWTNUM = int(f.read())
+    global initsol
+    global SOLNUM
+    with open(os.path.join(cwd, 'nwts', 'solnum.txt'), 'r+') as f:
+        SOLNUM = int(f.read())
         f.seek(0)
         f.truncate()
-        f.write(str(NWTNUM+1))
-    with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'w') as file:
+        f.write(str(SOLNUM+1))
+    with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'w') as file:
         file.write(('{} {} {} {} {} {} {} {} CONTINUE {} {} {} {} {} {} {} {}'.format(inputHp[1], inputHp[2], int(inputHp[3]), inputHp[4], inputHp[0]['linmeth'], inputHp[5],
                    inputHp[6], inputHp[7], inputHp[8], inputHp[9], inputHp[10], inputHp[11],
                    inputHp[12], int(inputHp[13]), inputHp[14], inputHp[15])) + '\n')
     if inputHp[0]['linmeth'] == 1:
-        with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'a') as file:
+        with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'a') as file:
            file.write(('{} {} {} {} {}'.format(int(inputHp[0]['maxitinner']), inputHp[0]['ilumethod'], int(inputHp[0]['levfill']),
                       inputHp[0]['stoptol'], int(inputHp[0]['msdr']))))
     elif inputHp[0]['linmeth'] == 2:
-        with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'a') as file:
+        with open(os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'a') as file:
            file.write(('{} {} {} {} {} {} {} {} {} {}'.format(inputHp[0]['iacl'], inputHp[0]['norder'], int(inputHp[0]['level']),
                       int(inputHp[0]['north']), inputHp[0]['iredsys'], inputHp[0]['rrctols'],
                       inputHp[0]['idroptol'], inputHp[0]['epsrn'], inputHp[0]['hclosexmd'],
                       int(inputHp[0]['mxiterxmd']))))
-    # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM))))
-    return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(NWTNUM)))
+    # print('[INFO] pulling nwt from', os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM))))
+    return os.path.join(cwd, 'nwts', ('nwt_{}.nwt'.format(SOLNUM)))
 
 
 def trials2csv(trials):
@@ -92,11 +92,11 @@ def trials2csv(trials):
     df = pd.DataFrame(trials.results).drop('loss', axis=1)
     df.to_csv(os.path.join(cwd, 'nwt_performance.csv'))
 
-def runModel(pathtonwt, initnwt):
+def runModel(pathtosol, initsol):
     global cwd
     global namefile
     global timelim
-    copyfile(pathtonwt, os.path.join(cwd, initnwt))
+    copyfile(pathtosol, os.path.join(cwd, initsol))
     last_line = ""
     run_command = ""
     use_timer = True
@@ -133,23 +133,22 @@ def getdata(mf6=False):
     global cwd
     global namefile
     global listfile
-    global initnwt
     mbline, timeline, iterline = '', '', ''
-    with open(os.path.join(cwd, listfile), 'r') as file:
-        mbfound = False
-        for line in reversed(list(file)):
-            if 'Error in Preconditioning' in line:
-                return 999999, -1, 999999
-            if 'PERCENT DISCREPANCY' in line.upper() and mbfound == False:
-                mbfound = True
-                mbline = line
-            if mf6 is False:
-                # only get runtime from LST file if NWT - for MF6, need to read mfsim.list
-                if 'elapsed run time' in line.lower():
-                    timeline = line
-            if 'OUTER ITERATIONS' in line.upper():
-                iterline = line
-                break
+    mbfound = False
+    for line in reversed(open(os.path.join(cwd, listfile), 'r') .readlines()):
+        if 'Error in Preconditioning' in line:
+            return 999999, -1, 999999
+        if 'PERCENT DISCREPANCY' in line.upper() and mbfound == False:
+            mbfound = True
+            mbline = line
+        if mf6 is False:
+            # only get runtime from LST file if NWT - for MF6, need to read mfsim.list
+            if 'elapsed run time' in line.lower():
+                timeline = line
+        #TODO: is there an OUTER ITERATIONS line in MF6?
+        if 'OUTER ITERATIONS' in line.upper():
+            iterline = line
+            break
     if mf6 is True:
         # special case to read elapsed time from mfsim.lst if MF6 model (that filename cannot change)
         mf6lst = reversed(open('mfsim.lst', 'r').readlines())
@@ -213,47 +212,53 @@ def getdata(mf6=False):
         print('[ERROR] bad run')
         return 999999, -1, 999999
 
-def objective(inputHp):
+def objective(inputHp, mf6=False):
     global cwd
     global namefile
     global listfile
-    global initnwt
-    global initims # needed for mf6
+    global initsol
     global timelim
     eval_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cwd = os.path.join(os.sep + os.path.join(*os.getcwd().split(os.sep)[0:-1]), os.path.join('NWT_SUBMIT','PROJECT_FILES'))
     for file in os.listdir(cwd):
-        if file.endswith('.nam') & file != 'mfsim.nam':
-            namefile = file
+        if mf6:
+            namefile = 'mfsim.nam'
+        else:
+            if file.endswith('.nam') & file != 'mfsim.nam':
+                namefile = file
         elif file.endswith('.list') or file.endswith('.lst') and 'mfsim' not in file:
             listfile = file
         elif file.endswith('.nwt'):
-            initnwt = file
+            initsol = file
         elif file.endswith('.ims'):
-            initims = file
-        
-    foundList, foundNWT = False, False
-    with open(os.path.join(cwd, namefile), 'r') as f:
-        while(not(foundList and foundNWT)):
-            line = f.readline()
-            for e in line.split(' '):
-                if '.list' in e or '.lst' in e:
-                    foundList = True
-                    listfile = e.strip()
-                elif '.nwt' in e:
-                    foundNWT = True
-                    initnwt = e.strip()
+            initsol = file
+    
+    for line in open(os.path.join(cwd, namefile)).readlines():
+        for e in line.strip().split(' '):
+            if e.lower().endswith('.list') or e.endswith('.lst'):
+                listfile = e.strip()
+            elif e.lower().endswith('.nwt'):
+                initsol = e.strip()
+            elif e.lower().endswith('.ims'):
+                initsol = e.strip()
 
-    pathtonwt = inputHp2nwt(inputHp)
-    if not runModel(pathtonwt, initnwt):
-        return {'loss': 999999999999,
-                'status':  STATUS_OK,
-                'eval_time': eval_time,
-                'mass_balance': 999999,
-                'sec_elapsed': timelim,
-                'iterations': -1,
-                'NWT Used': pathtonwt,
-                'finish_time': finish_time}
+    if mf6:
+        pathtosol = inputHp2mf6(inputHp)
+    else:
+        pathtosol = inputHp2nwt(inputHp)
+    if not runModel(pathtosol, initsol):
+        ret_dict = {'loss': 999999999999,
+                    'status':  STATUS_OK,
+                    'eval_time': eval_time,
+                    'mass_balance': 999999,
+                    'sec_elapsed': timelim,
+                    'iterations': -1,
+                    'NWT Used': pathtosol,
+                    'finish_time': finish_time}
+        if mf6:
+            junk = ret_dict.pop('NWT Used') 
+            ret_dict['IMS Used'] = pathtosol
+        return ret_dict
 
     sec_elapsed, iterations, mass_balance = getdata()
     if mass_balance == 999999:
@@ -261,11 +266,15 @@ def objective(inputHp):
     else:
         loss = math.exp(mass_balance ** 2) * sec_elapsed
     finish_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    return {'loss': loss,
-            'status':  STATUS_OK,
-            'eval_time': eval_time,
-            'mass_balance': mass_balance,
-            'sec_elapsed': sec_elapsed,
-            'iterations': iterations,
-            'NWT Used': pathtonwt,
-            'finish_time': finish_time}
+    ret_dict = {'loss': loss,
+                'status':  STATUS_OK,
+                'eval_time': eval_time,
+                'mass_balance': mass_balance,
+                'sec_elapsed': sec_elapsed,
+                'iterations': iterations,
+                'NWTUsed': pathtosol,
+                'finish_time': finish_time}
+    if mf6:
+        junk = ret_dict.pop('NWT Used') 
+        ret_dict['IMS Used'] = pathtosol
+    return ret_dict

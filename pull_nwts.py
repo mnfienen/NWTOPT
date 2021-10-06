@@ -6,23 +6,23 @@ from hyperopt.mongoexp import MongoTrials
 from hyperopt.exceptions import AllTrialsFailed
 import argparse
 
-def inputHp2nwt(inputHp, NWTNUM, args):
+def inputHp2nwt(inputHp, SOLNUM, args):
     cwd = os.getcwd()
-    with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'w') as file:
+    with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'w') as file:
         file.write(('{} {} {} {} {} {} {} {} CONTINUE {} {} {} {} {} {} {} {}'.format(inputHp['headtol'][0], inputHp['fluxtol'][0], int(inputHp['maxiterout'][0]),
         inputHp['thickfact'][0], inputHp['linmeth'][0] + 1, inputHp['iprnwt'][0], inputHp['ibotav'][0], 'SPECIFIED', inputHp['dbdtheta'][0],
         inputHp['dbdkappa'][0], inputHp['dbdgamma'][0], inputHp['momfact'][0], inputHp['backflag'][0], int(inputHp['maxbackiter'][0]), inputHp['backtol'][0],
         inputHp['backreduce'][0])) + '\n')
     if inputHp['linmeth'][0] + 1 == 1:
-        with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'a') as file:
+        with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'a') as file:
            file.write(('{} {} {} {} {}'.format(int(inputHp['maxitinner'][0]), inputHp['ilumethod'][0], int(inputHp['levfill'][0]), inputHp['stoptol'][0], int(inputHp['msdr'][0]))))
     elif inputHp['linmeth'][0] + 1 == 2:
-        with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(NWTNUM))), 'a') as file:
+        with open(os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(SOLNUM))), 'a') as file:
            file.write(('{} {} {} {} {} {} {} {} {} {}'.format(inputHp['iacl'][0], inputHp['norder'][0], int(inputHp['level'][0]),
                       int(inputHp['north'][0]), inputHp['iredsys'][0], inputHp['rrctols'][0],
                       inputHp['idroptol'][0], inputHp['epsrn'][0], inputHp['hclosexmd'][0],
                       int(inputHp['mxiterxmd'][0]))))
-    return os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(NWTNUM)))
+    return os.path.join(cwd, args.key + '_nwts', ('nwt_{}.nwt'.format(SOLNUM)))
 
 def pullNWTs(ip, port, key, args):
     if args.verbose:

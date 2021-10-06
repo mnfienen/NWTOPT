@@ -26,7 +26,7 @@ cp run.sh nwtenv/bin/run.sh
 cp run.sh NWT_SUBMIT/PROJECT_FILES/run.sh
 mv NWT_SUBMIT/NWTOPT_FILES/mfnwt NWT_SUBMIT/PROJECT_FILES/mfnwt
 mkdir NWT_SUBMIT/PROJECT_FILES/nwts
-mv NWT_SUBMIT/NWTOPT_FILES/nwtnum.txt NWT_SUBMIT/PROJECT_FILES/nwts/nwtnum.txt
+mv NWT_SUBMIT/NWTOPT_FILES/solnum.txt NWT_SUBMIT/PROJECT_FILES/nwts/solnum.txt
 echo ...Moved Necessary Files.....
 echo
 ls

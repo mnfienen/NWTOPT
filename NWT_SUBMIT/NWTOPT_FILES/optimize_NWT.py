@@ -75,10 +75,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     trials = MongoTrials('mongo://'+ args.ip + ':'+ args.port + '/db/jobs', exp_key=args.key)
     try:
-        os.remove(os.path.join(os.getcwd(), 'nwts/nwtnum.txt'))
+        os.remove(os.path.join(os.getcwd(), 'nwts/solnum.txt'))
     except:
         pass
-    with open(os.path.join(os.getcwd(), 'nwts/nwtnum.txt'), 'w+') as f:
+    with open(os.path.join(os.getcwd(), 'nwts/solnum.txt'), 'w+') as f:
         f.write('0')
     if args.random == False:
         print('TPE Run')

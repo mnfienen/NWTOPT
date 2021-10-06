@@ -11,10 +11,10 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 
 
-def inputHp2df(inputHp, NWTNUM, args):
+def inputHp2df(inputHp, SOLNUM, args):
     array = []
     if inputHp['linmeth'][0] + 1 == 1:
-        arr = [NWTNUM, inputHp['headtol'][0], inputHp['fluxtol'][0], int(inputHp['maxiterout'][0]),
+        arr = [SOLNUM, inputHp['headtol'][0], inputHp['fluxtol'][0], int(inputHp['maxiterout'][0]),
         inputHp['thickfact'][0], inputHp['linmeth'][0] + 1, inputHp['iprnwt'][0], inputHp['ibotav'][0], 'SPECIFIED', inputHp['dbdtheta'][0],
         inputHp['dbdkappa'][0], inputHp['dbdgamma'][0], inputHp['momfact'][0], inputHp['backflag'][0], int(inputHp['maxbackiter'][0]), inputHp['backtol'][0],
         inputHp['backreduce'][0], inputHp['maxitinner'][0], inputHp['ilumethod'][0], int(inputHp['levfill'][0]), inputHp['stoptol'][0], int(inputHp['msdr'][0]),
@@ -22,7 +22,7 @@ def inputHp2df(inputHp, NWTNUM, args):
 
 
     elif inputHp['linmeth'][0] + 1 == 2:
-        arr = [NWTNUM, inputHp['headtol'][0], inputHp['fluxtol'][0], int(inputHp['maxiterout'][0]),
+        arr = [SOLNUM, inputHp['headtol'][0], inputHp['fluxtol'][0], int(inputHp['maxiterout'][0]),
         inputHp['thickfact'][0], inputHp['linmeth'][0] + 1, inputHp['iprnwt'][0], inputHp['ibotav'][0], 'SPECIFIED', inputHp['dbdtheta'][0],
         inputHp['dbdkappa'][0], inputHp['dbdgamma'][0], inputHp['momfact'][0], inputHp['backflag'][0], int(inputHp['maxbackiter'][0]), inputHp['backtol'][0],
         inputHp['backreduce'][0], None, None, None, None, None, inputHp['iacl'][0], inputHp['norder'][0], int(inputHp['level'][0]), int(inputHp['north'][0]), inputHp['iredsys'][0], inputHp['rrctols'][0],
@@ -40,7 +40,7 @@ def pullNWTs(ip, port, key, args):
     arr = []
     for i in range(len(trials.trials)):
         arr.append(inputHp2df(trials.trials[i].get('misc').get('vals').to_dict(), i, args))
-    df = pd.DataFrame(arr, columns=['NWTNUM', 'headtol', 'fluxtol', 'maxiterout', 'thickfact', 'linmeth', 'iprnwt', 'ibotav', 'option', 'dbdtheta', 'dbdkappa', 'dbdgamma', 'momfact', 'backflag',
+    df = pd.DataFrame(arr, columns=['SOLNUM', 'headtol', 'fluxtol', 'maxiterout', 'thickfact', 'linmeth', 'iprnwt', 'ibotav', 'option', 'dbdtheta', 'dbdkappa', 'dbdgamma', 'momfact', 'backflag',
     'maxbackiter', 'backtol', 'backreduce', 'maxitinner', 'ilumethod', 'levfill', 'stoptol', 'msdr', 'iacl', 'norder', 'level', 'north', 'iredsys', 'rrctols', 'idroptol', 'epsrn', 'hclosexmd', 'mxiterxmd'])
     results = []
     for i in range(len(trials.trials)):
@@ -96,7 +96,7 @@ def plotCorrelations(df):
     plt.subplots_adjust(hspace=.4, wspace=.5)
     cax,kw = mpl.colorbar.make_axes([ax for ax in axes.flat])
     clb = plt.colorbar(axes[0][0].get_children()[0], cax=cax, **kw)
-    clb.set_label('NWTNUM')
+    clb.set_label('SOLNUM')
 
     plt.savefig(fname='corr graphs')
 
